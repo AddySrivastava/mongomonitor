@@ -17,7 +17,26 @@ type S3Client struct {
 	collection       string
 }
 
-func (S3Client *S3Client) Insert(docs []interface{}) types.WriteResponse {
+func (S3Client *S3Client) InsertMany(docs []interface{}) types.WriteResponse {
+	s3Client := S3Client.getDatabaseInstance()
+	//coll := s3Client.database(S3Client.database).Collection(S3Client.collection)
+
+	//_, err := coll.InsertMany(context.TODO(), docs)
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	fmt.Println(s3Client)
+
+	return types.WriteResponse{Inserted: 0, Success: true}
+}
+
+func (S3Client *S3Client) Upsert(filter interface{}, update interface{}, options []byte) types.WriteResponse {
+
+	return types.WriteResponse{Inserted: 0, Success: true}
+}
+
+func (S3Client *S3Client) InsertOne(docs interface{}) types.WriteResponse {
 	s3Client := S3Client.getDatabaseInstance()
 	//coll := s3Client.database(S3Client.database).Collection(S3Client.collection)
 
@@ -37,6 +56,11 @@ func (s3Client *S3Client) FindById() types.WriteResponse {
 
 func (s3Client *S3Client) FindAll() types.WriteResponse {
 	return types.WriteResponse{Inserted: 0, Success: true}
+}
+
+func (s3Client *S3Client) ExecuteCommand(cmd []byte) map[string]interface{} {
+	var response map[string]interface{}
+	return response
 }
 func (s3Client *S3Client) SetDatabase(database string) {
 	s3Client.database = database

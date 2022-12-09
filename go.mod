@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/aws/aws-sdk-go v1.44.140
-	github.com/davecgh/go-spew v1.1.1
 	github.com/spf13/cobra v1.6.1
 	go.mongodb.org/mongo-driver v1.11.0
 )

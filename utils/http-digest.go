@@ -34,7 +34,11 @@ func sendRequest(uri string, method string, username string, password string, po
 	//req body for the digest api call
 	httpClient := &http.Client{}
 	resp, err := httpClient.Do(req)
-	resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
 
 	if err != nil {
 		panic(err)
@@ -43,7 +47,7 @@ func sendRequest(uri string, method string, username string, password string, po
 	// If the response during the first request is not 401 then endpoint doesn't need auth and
 	// the response can be sent to the caller
 	if resp.StatusCode != http.StatusUnauthorized {
-		log.Printf("Recieved status code '%v' auth skipped", resp.StatusCode)
+		log.Printf("Recieved status code '%v' auth skipped, reason - %s", resp.StatusCode, string(bodyBytes))
 		respBody, err = ioutil.ReadAll(resp.Body)
 		return respBody, resp.StatusCode, err
 	}

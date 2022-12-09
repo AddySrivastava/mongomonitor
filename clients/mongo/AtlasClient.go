@@ -35,6 +35,7 @@ func (atlasClient *AtlasClient) GetLogsWithRange(projectId string, hostname stri
 
 	//Make HTTP digest call to fetch the logs
 	respBody, _, _ := httpClient.MakeRequest()
+
 	return respBody
 }
 
