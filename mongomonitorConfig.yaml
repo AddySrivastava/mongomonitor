@@ -1,0 +1,7 @@
+## Register custom metrics based on the output of the commands
+customMetrics:
+    collStats:
+      collectionName: sample_training
+      metrics:
+        - storageStats.numOrphanDocs
+        - storageStats.avgObjSize

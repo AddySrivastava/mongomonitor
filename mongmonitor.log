@@ -1,0 +1,6 @@
+ERROR: 2023/03/17 09:04:19 CustomEventHandler.go:44: Failed to parse the configuration file, Error: &errors.errorString{s:"yaml: line 6: could not find expected ':'"}
+ERROR: 2023/03/17 09:42:18 CustomEventHandler.go:43: Failed to parse the configuration file, Error: &errors.errorString{s:"yaml: line 6: could not find expected ':'"}
+ERROR: 2023/03/18 09:07:05 CustomEventHandler.go:44: Failed to parse the configuration file, Error: &yaml.TypeError{Errors:[]string{"line 4: cannot unmarshal !!map into []string"}}
+ERROR: 2023/03/23 10:15:38 DatabaseClient.go:97: Exception while running execute command, err - cannot decode invalid into a []byte
+ERROR: 2023/03/23 10:20:53 DatabaseClient.go:99: Exception while running execute command, err - cannot decode invalid into a []byte
+ERROR: 2023/03/23 10:25:40 DatabaseClient.go:99: Exception while running execute command, err - cannot decode invalid into a []byte

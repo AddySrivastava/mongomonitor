@@ -5,12 +5,17 @@ import (
 	json "encoding/json"
 	fmt "fmt"
 	types "mongomonitor/types"
+	"mongomonitor/utils"
 
 	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 	mongo "go.mongodb.org/mongo-driver/mongo"
 )
+
+//init logger
+
+var logger = utils.GetLogger()
 
 type DatabaseClient struct {
 	ConnectionString string
@@ -74,31 +79,56 @@ func (DatabaseClient *DatabaseClient) FindAll() types.WriteResponse {
 	return types.WriteResponse{Inserted: 0, Success: true}
 }
 
-func (DatabaseClient *DatabaseClient) ExecuteCommand(cmd []byte) map[string]interface{} {
+func (DatabaseClient *DatabaseClient) ExecuteCommand2(database string, cmd bson.D) *mongo.SingleResult {
 
-	var cmdResponse map[string]interface{}
-	var bsonCommand bson.D
+	//var bsonCommand bson.D
 
-	err := bson.Unmarshal(cmd, &bsonCommand)
+	//bson.Unmarshal(cmd, &bsonCommand)
 
-	if err != nil {
-		panic(err)
-	}
+	fmt.Printf("%v", cmd)
 
+	DatabaseClient.SetDatabase(database)
+
+	fmt.Println(DatabaseClient.database)
 	databaseClient := DatabaseClient.getDatabaseInstance()
 	db := databaseClient.Database(DatabaseClient.database)
-	err2 := db.RunCommand(context.TODO(), bsonCommand).Decode(&cmdResponse)
+	runCommandResponse := db.RunCommand(context.TODO(), cmd)
 
-	if err2 != nil {
-		fmt.Println(err2)
+	return runCommandResponse
+
+}
+
+func (DatabaseClient *DatabaseClient) ExecuteCommand(database string, cmd bson.D) map[string]interface{} {
+
+	var cmdResponse map[string]interface{}
+	//var bsonCommand bson.D
+
+	//bson.Unmarshal(cmd, &bsonCommand)
+
+	DatabaseClient.SetDatabase(database)
+
+	fmt.Println(DatabaseClient.database)
+	databaseClient := DatabaseClient.getDatabaseInstance()
+	db := databaseClient.Database(DatabaseClient.database)
+	runCommandErr := db.RunCommand(context.TODO(), cmd).Decode(&cmdResponse)
+
+	if runCommandErr != nil {
+		logger.LogError.Panicf("Exception while running execute command, err - %v", runCommandErr)
 	}
 
 	return cmdResponse
-
 }
 
 func (DatabaseClient *DatabaseClient) SetDatabase(database string) {
 	DatabaseClient.database = database
+}
+
+func (DatabaseClient *DatabaseClient) GetDatabase() string {
+	return DatabaseClient.database
+}
+
+func (DatabaseClient *DatabaseClient) GetCollection() string {
+	return DatabaseClient.collection
 }
 
 func (DatabaseClient *DatabaseClient) SetCollection(collection string) {
@@ -120,6 +150,10 @@ func (DatabaseClient *DatabaseClient) getDatabaseInstance() *mongo.Client {
 	clientOpts := mongoOptions.Client().ApplyURI(DatabaseClient.ConnectionString)
 	client, err := mongo.Connect(context.TODO(), clientOpts)
 
+	if err != nil {
+		fmt.Errorf("Error while connecting to the federated client = ", err)
+		panic(err)
+	}
 	response, _ := json.Marshal(client)
 
 	fmt.Println(string(response))

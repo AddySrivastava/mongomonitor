@@ -21,8 +21,9 @@ type AccessEvent struct {
 }
 
 type AccessEventHandler struct {
-	EventDispatcher  *Dispatcher
-	RepositoryClient *repository.IRepositoryClient
+	EventDispatcher        *Dispatcher
+	RepositoryClient       *repository.IRepositoryClient
+	MongoMonitorRepository *repository.MongomonitorRepository
 }
 
 func (accessEventHandler *AccessEventHandler) Handle(payload []byte) (bool, error) {
