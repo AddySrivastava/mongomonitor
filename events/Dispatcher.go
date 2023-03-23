@@ -25,9 +25,11 @@ func (dispatcher *Dispatcher) Dispatch(name string, payload *[]byte) error {
 		return fmt.Errorf("The %s event is not registered", name)
 	}
 
-	eventHandler = *dispatcher.Events[name]
-	//spew.Dump(eventHandler)
-	_, err := eventHandler.Handle(*payload)
-
-	return err
+	if _, ok := dispatcher.Events[name]; ok {
+		eventHandler = *dispatcher.Events[name]
+		_, err := eventHandler.Handle(*payload)
+		return err
+	} else {
+		return fmt.Errorf("The handler %s is not registered", name)
+	}
 }

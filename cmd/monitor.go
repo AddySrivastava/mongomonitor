@@ -1,74 +1,76 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"mongomonitor/clients/repository"
 	"mongomonitor/events"
 	"mongomonitor/factories"
-
-	"github.com/spf13/cobra"
+	"os"
 )
 
 var url string
 var time string
 
-var monitorCmd = &cobra.Command{
-	Use:   "monitor",
-	Short: "Periodically monitor and store the MongoDB deployment",
-	Run: func(cmd *cobra.Command, args []string) {
+func Execute(payload []byte) {
 
-		//Initialize database connection
+	var databaseClient repository.IRepositoryClient
 
-		const connectionString = "mongodb+srv://admin:passwordone@adityas-m10.4xwip.mongodb.net/?retryWrites=true&w=majority"
-		options := make(map[string]string)
+	//read connection string from environment varibales
+	var connectionString = os.Getenv("MONGODB_URI")
 
-		databaseFactory := factories.DatabaseFactory{}
+	fmt.Println(connectionString)
 
-		var databaseClient repository.IRepositoryClient
+	options := make(map[string]string)
 
-		databaseClient = databaseFactory.CreateDatabase("database", connectionString, options)
+	databaseFactory := (factories.DatabaseFactory{})
 
-		//Initialize the event dispatcher and Register Event Handlers
-		eventDispatcher := &events.Dispatcher{Events: make(map[string]*events.IEventHandler)}
+	databaseClient = databaseFactory.CreateDatabase("database", connectionString, options)
 
-		accessEventHandler, _ := events.CreateHandler("FIRE_ACCESS_EVENT", eventDispatcher, &databaseClient)
-		logFetchHandler, _ := events.CreateHandler("INITIATE_LOG_FETCH", eventDispatcher, &databaseClient)
-		logUploadHandler, _ := events.CreateHandler("INITIATE_LOG_UPLOAD", eventDispatcher, &databaseClient)
-		serverStatsCollector, _ := events.CreateHandler("INITIATE_SERVER_STATS_COLLECTOR", eventDispatcher, &databaseClient)
+	mongoMonitorRepo := repository.MongomonitorRepository{RepositoryClient: &databaseClient}
 
-		eventDispatcher.Register(&accessEventHandler, "FIRE_ACCESS_EVENT")
-		eventDispatcher.Register(&logFetchHandler, "INITIATE_LOG_FETCH")
-		eventDispatcher.Register(&logUploadHandler, "INITIATE_LOG_UPLOAD")
-		eventDispatcher.Register(&serverStatsCollector, "INITIATE_SERVER_STATS_COLLECTOR")
+	//Initialize the event dispatcher and Register Event Handlers
+	eventDispatcher := &events.Dispatcher{Events: make(map[string]*events.IEventHandler)}
 
-		//time, timeErr := cmd.LocalFlags().GetString("time")
+	accessEventHandler, _ := events.CreateHandler("FIRE_ACCESS_EVENT", eventDispatcher, &databaseClient, &mongoMonitorRepo)
+	logFetchHandler, _ := events.CreateHandler("INITIATE_LOG_FETCH", eventDispatcher, &databaseClient, &mongoMonitorRepo)
+	logUploadHandler, _ := events.CreateHandler("INITIATE_LOG_UPLOAD", eventDispatcher, &databaseClient, &mongoMonitorRepo)
+	serverStatsCollector, _ := events.CreateHandler("INITIATE_SERVER_STATS_COLLECTOR", eventDispatcher, &databaseClient, &mongoMonitorRepo)
+	databaseStatsCollector, _ := events.CreateHandler("INITIATE_DB_STATS_COLLECTOR", eventDispatcher, &databaseClient, &mongoMonitorRepo)
+	customEventStatsCollector, _ := events.CreateHandler("INTIATE_CUSTOM_EVENT_COLLECTOR", eventDispatcher, &databaseClient, &mongoMonitorRepo)
 
-		//if timeErr != nil {
-		//	log.Fatal("Not a valid time value", timeErr)
-		//}
+	eventDispatcher.Register(&accessEventHandler, "FIRE_ACCESS_EVENT")
+	eventDispatcher.Register(&logFetchHandler, "INITIATE_LOG_FETCH")
+	eventDispatcher.Register(&logUploadHandler, "INITIATE_LOG_UPLOAD")
+	eventDispatcher.Register(&serverStatsCollector, "INITIATE_SERVER_STATS_COLLECTOR")
+	eventDispatcher.Register(&databaseStatsCollector, "INITIATE_DB_STATS_COLLECTOR")
+	eventDispatcher.Register(&customEventStatsCollector, "INTIATE_CUSTOM_EVENT_COLLECTOR")
 
-		// create the scheduler object to schedule the jobs based on the time specified
-		/*scheduler := scheduler.JobScheduler{
-			Time:    time,
-			Payload: make(map[string]string),
-		}*/
+	//time, timeErr := cmd.LocalFlags().GetString("time")
 
-		// create the job executor that ingests the logs based on the function
-		logEventPayload := []byte(`{"path": "mongodbLog.log.gz"}`)
+	//if timeErr != nil {
+	//	log.Fatal("Not a valid time value", timeErr)
+	//}
 
-		//err := eventDispatcher.Dispatch("INITIATE_LOG_UPLOAD", &logEventPayload)
-		err2 := eventDispatcher.Dispatch("INITIATE_SERVER_STATS_COLLECTOR", &logEventPayload)
+	// create the scheduler object to schedule the jobs based on the time specified
+	/*scheduler := scheduler.JobScheduler{
+		Time:    time,
+		Payload: make(map[string]string),
+	}*/
 
-		log.Fatal(err2)
+	// create the job executor that ingests the logs based on the function
+	//logEventPayload := []byte(`{"path": "mongodbLog.log.gz"}`)
 
-		// call schedule with the log ingestion executor
-		//scheduler.Schedule(jobExecutor)
-	},
-}
+	//err := eventDispatcher.Dispatch("INITIATE_LOG_UPLOAD", &logEventPayload)
+	//err2 := eventDispatcher.Dispatch("INITIATE_SERVER_STATS_COLLECTOR", &logEventPayload)
 
-func init() {
-	rootCmd.AddCommand(monitorCmd)
-	monitorCmd.Flags().StringVarP(&url, "url", "u", "", "Connection string eg - mongodb+srv://username:password@host")
-	monitorCmd.Flags().StringVarP(&time, "time", "t", "00:00", "timestamp when the job will get executed in UTC 24h format eg- --time 18:00")
-	monitorCmd.MarkFlagRequired("url")
+	//("INITIATE_DB_STATS_COLLECTOR", &logEventPayload)
+
+	err4 := eventDispatcher.Dispatch("INTIATE_CUSTOM_EVENT_COLLECTOR", &payload)
+
+	//log.Fatal(err3)
+	log.Fatal(err4)
+
+	// call schedule with the log ingestion executor
+	//scheduler.Schedule(jobExecutor)
 }

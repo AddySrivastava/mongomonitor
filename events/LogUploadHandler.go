@@ -22,8 +22,9 @@ Struct to upload log files
 */
 
 type LogUploadHandler struct {
-	EventDispatcher  *Dispatcher
-	RepositoryClient *repository.IRepositoryClient
+	EventDispatcher        *Dispatcher
+	RepositoryClient       *repository.IRepositoryClient
+	MongoMonitorRepository *repository.MongomonitorRepository
 }
 
 func (lu *LogUploadHandler) Handle(payload []byte) (bool, error) {

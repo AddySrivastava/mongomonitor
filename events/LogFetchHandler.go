@@ -10,8 +10,9 @@ import (
 )
 
 type LogFetchHandler struct {
-	EventDispatcher  *Dispatcher
-	RepositoryClient *repository.IRepositoryClient
+	EventDispatcher        *Dispatcher
+	RepositoryClient       *repository.IRepositoryClient
+	MongoMonitorRepository *repository.MongomonitorRepository
 }
 
 func (logFetchHandler *LogFetchHandler) Handle(payload []byte) (bool, error) {
