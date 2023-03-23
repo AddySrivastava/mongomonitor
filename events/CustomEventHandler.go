@@ -6,7 +6,6 @@ import (
 	"mongomonitor/types"
 	"mongomonitor/utils"
 
-	"github.com/davecgh/go-spew/spew"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/yaml.v2"
 )
@@ -62,13 +61,6 @@ func (customEventHandler *CustomEventHandler) Handle(payload []byte) (bool, erro
 	response := repository.ExecuteCommand2("sample_training", collStatsCommand)
 
 	response.Decode(&collStats)
-
-	spew.Dump(collStats)
-	//fmt.Printf("%v", collStats)
-	//for each of the custom events run the command and grab the metrics
-	// for k, v := range customEventConfig.CustomMetrics.CollStats {
-
-	// }
 
 	return true, nil
 
